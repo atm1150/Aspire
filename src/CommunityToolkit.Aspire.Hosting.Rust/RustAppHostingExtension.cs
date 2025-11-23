@@ -15,19 +15,22 @@ public static class RustAppHostingExtension
     /// <param name="name">The name of the resource.</param>
     /// <param name="workingDirectory">The working directory to use for the command.</param>
     /// <param name="args">The optinal arguments to be passed to the executable when it is started.</param>
+    /// <param name="buildOptions">The options for specifying the Rust build tool and any required arguments.</param>
     /// <returns>A reference to the <see cref="IResourceBuilder{T}"/>.</returns>
-    public static IResourceBuilder<RustAppExecutableResource> AddRustApp(this IDistributedApplicationBuilder builder, [ResourceName] string name, string workingDirectory, string[]? args = null)
+    public static IResourceBuilder<RustAppExecutableResource> AddRustApp(this IDistributedApplicationBuilder builder, [ResourceName] string name, string workingDirectory, string[]? args = null, RustBuildOptions? buildOptions = null)
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
         ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
         ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory, nameof(workingDirectory));
 
+        var options = buildOptions ?? new RustBuildOptions();
+
         string[] allArgs = args is { Length: > 0 }
-            ? ["run", ".", .. args]
-            : ["run", ".",];
+            ? [.. options.BuildArgs, .. args]
+            : options.BuildArgs;
 
         workingDirectory = Path.Combine(builder.AppHostDirectory, workingDirectory).NormalizePathForCurrentPlatform();
-        var resource = new RustAppExecutableResource(name, workingDirectory);
+        var resource = new RustAppExecutableResource(name, workingDirectory, options.Tool);
 
         return builder.AddResource(resource)
                       .WithRustDefaults()
