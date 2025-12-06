@@ -24,5 +24,5 @@ public class RustBuildOptions
     /// <summary>
     /// The command arguments to pass to the build tool.
     /// </summary>
-    public string[] BuildArgs { get; set; } = ["run", "."];
+    public string[] BuildArgs { get; set; } = ["run"];
 }
